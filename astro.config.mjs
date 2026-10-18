@@ -1,5 +1,4 @@
 import { setMaxListeners } from "node:events";
-import cloudflare from "@astrojs/cloudflare";
 import { unified } from "@astrojs/markdown-remark";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
@@ -59,8 +58,10 @@ if (process.env.NODE_ENV === "development") {
 	setMaxListeners(20);
 }
 
+// 仅在需要部署到 Cloudflare Workers 时才加载该适配器（CF_WORKERS=1）。
+// 本地 dev 不加载，避免因 workerd 二进制缺失导致配置加载失败。
 const adapter = process.env.CF_WORKERS
-	? cloudflare({
+	? (await import("@astrojs/cloudflare")).default({
 			prerenderEnvironment: "node",
 		})
 	: undefined;
