@@ -1,0 +1,55 @@
+# Sveltia CMS 配置
+# 文档：https://sveltiacms.app/zh/docs/
+
+backend:
+  name: github
+  repo: gggg666777/Firefly
+  branch: master
+  # GitHub OAuth 代理（部署后替换成真实地址）
+  base_url: https://sveltia-auth.ysnb.store
+
+# 站点语言
+locale: zh_Hans
+
+# 图片存放位置
+media_folder: public/assets/uploads
+public_folder: /assets/uploads
+
+# 提交信息模板
+commit_messages:
+  create: 'cms: 新建 %{collection}「%{slug}」'
+  update: 'cms: 更新 %{collection}「%{slug}」'
+  delete: 'cms: 删除 %{collection}「%{slug}」'
+  uploadMedia: 'cms: 上传图片 %{path}'
+  deleteMedia: 'cms: 删除图片 %{path}'
+
+collections:
+  - name: posts
+    label: 文章
+    label_singular: 文章
+    folder: src/content/posts
+    create: true
+    delete: true
+    slug: '{{year}}-{{month}}-{{day}}-{{slug}}'
+    extension: md
+    format: frontmatter
+    summary: '{{title}}  ·  {{published}}'
+    sortable_fields: [published, title]
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - {
+          label: 发布日期,
+          name: published,
+          widget: datetime,
+          date_format: 'YYYY-MM-DD',
+          time_format: false,
+          picker_utc: true,
+        }
+      - { label: 摘要, name: description, widget: text, required: false, hint: 显示在首页卡片上 }
+      - { label: 封面图, name: image, widget: image, required: false }
+      - { label: 标签, name: tags, widget: list, required: false, default: [] }
+      - { label: 分类, name: category, widget: string, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: false, hint: 打开后不会公开 }
+      - { label: 语言, name: lang, widget: string, required: false, default: '' }
+      - { label: 固定链接, name: slug, widget: string, required: false, hint: 留空则自动生成 }
+      - { label: 正文, name: body, widget: markdown }
