@@ -47,3 +47,6 @@ package/
 .codex*
 .claude
 .mimocode
+
+# 本地发布脚本，不进仓库
+发布文章.cmd
