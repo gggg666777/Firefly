@@ -71,8 +71,8 @@ collections:
           name: published,
           widget: datetime,
           date_format: 'YYYY-MM-DD',
-          time_format: 'HH:mm',
-          picker_utc: true,
+          time_format: 'HH:mm:ss',
+          picker_utc: false,
         }
       - { label: 置顶, name: pinned, widget: boolean, default: false }
       - { label: 位置, name: location, widget: string, required: false, hint: 可留空 }
