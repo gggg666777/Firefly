@@ -20,6 +20,10 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 	// 是否显启用歌词
 	showLyrics: false,
 
+	// 打开网页时是否自动播放
+	// 注意：浏览器策略会拦截无交互的自动播放，此时会在用户首次点击/滚动/按键时开始播放
+	autoplay: true,
+
 	// Meting API 配置
 	meting: {
 		// Meting API 地址

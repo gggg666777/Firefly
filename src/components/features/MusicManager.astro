@@ -35,6 +35,7 @@ const managerConfigStr = JSON.stringify({
 	volume: config.volume ?? 0.7,
 	playMode: config.playMode ?? "list",
 	showLyrics: config.showLyrics ?? true,
+	autoplay: config.autoplay ?? false,
 	i18n: {
 		noPlaying: i18n(I18nKey.musicNoPlaying),
 		lyrics: i18n(I18nKey.musicLyrics),
@@ -401,6 +402,44 @@ const managerConfigStr = JSON.stringify({
         }
     });
 
+    // ── Autoplay ─────────────────────────────────────────────
+    // 浏览器会拦截没有用户交互的自动播放，被拦截后改为监听首次交互再播
+    var autoplayArmed = false;
+
+    function armAutoplayOnGesture() {
+        if (autoplayArmed) return;
+        autoplayArmed = true;
+        var events = ['pointerdown', 'touchstart', 'keydown', 'wheel'];
+        function onGesture() {
+            events.forEach(function (ev) {
+                document.removeEventListener(ev, onGesture, true);
+            });
+            if (!state.isPlaying) {
+                audio.play().then(function () {
+                    state.isPlaying = true;
+                    emit('fm:play-state', { isPlaying: true });
+                }).catch(function () {});
+            }
+        }
+        events.forEach(function (ev) {
+            document.addEventListener(ev, onGesture, { capture: true, passive: true });
+        });
+    }
+
+    function tryAutoplay() {
+        if (!config.autoplay) return;
+        var p = audio.play();
+        if (!p || typeof p.then !== 'function') return;
+        p.then(function () {
+            state.isPlaying = true;
+            emit('fm:play-state', { isPlaying: true });
+        }).catch(function (err) {
+            if (err && err.name === 'NotAllowedError') {
+                armAutoplayOnGesture();
+            }
+        });
+    }
+
     // ── Init (idempotent) ────────────────────────────────────
     async function init() {
         if (state.initialized || state.initializing) return;
@@ -432,6 +471,7 @@ const managerConfigStr = JSON.stringify({
                 });
 
                 loadTrack(startIndex, false);
+                tryAutoplay();
             } else {
                 state.initialized = true;
                 emit('fm:init', {
