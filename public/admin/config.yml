@@ -53,3 +53,27 @@ collections:
       - { label: 语言, name: lang, widget: string, required: false, default: '' }
       - { label: 固定链接, name: slug, widget: string, required: false, hint: 留空则自动生成 }
       - { label: 正文, name: body, widget: markdown }
+
+  - name: dynamic
+    label: 动态
+    label_singular: 动态
+    folder: src/content/dynamic
+    create: true
+    delete: true
+    slug: '{{year}}-{{month}}-{{day}}-{{hour}}{{minute}}{{second}}'
+    extension: md
+    format: frontmatter
+    summary: '{{published}}  ·  {{body}}'
+    sortable_fields: [published]
+    fields:
+      - {
+          label: 发布时间,
+          name: published,
+          widget: datetime,
+          date_format: 'YYYY-MM-DD',
+          time_format: 'HH:mm',
+          picker_utc: true,
+        }
+      - { label: 置顶, name: pinned, widget: boolean, default: false }
+      - { label: 位置, name: location, widget: string, required: false, hint: 可留空 }
+      - { label: 内容, name: body, widget: markdown }
