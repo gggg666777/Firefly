@@ -54,7 +54,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 			{
 				name: "雑踏、僕らの街",
 				artist: "トゲナシトゲアリ",
-				url: "/assets/music/雑踏、僕らの街.flac",
+				url: "/assets/music/zattou-bokura-no-machi.mp3",
 				cover: "/assets/music/cover/zattou-bokura-no-machi.jpg",
 				lrc: "",
 			},
