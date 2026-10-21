@@ -142,6 +142,86 @@ function serializeMenus(menus: Props["config"]["menus"]) {
 		},
 	};
 
+	// ── 拖拽：可以把它推着走 ────────────────────────────────
+	function setupDrag(container: HTMLElement) {
+		const THRESHOLD = 6;
+		let startX = 0;
+		let startY = 0;
+		let origLeft = 0;
+		let origTop = 0;
+		let dragging = false;
+		let moved = false;
+
+		container.style.cursor = "grab";
+		container.style.touchAction = "none";
+
+		container.addEventListener("pointerdown", (e: PointerEvent) => {
+			if (e.button !== 0) return;
+			const rect = container.getBoundingClientRect();
+			startX = e.clientX;
+			startY = e.clientY;
+			origLeft = rect.left;
+			origTop = rect.top;
+			dragging = true;
+			moved = false;
+		});
+
+		window.addEventListener("pointermove", (e: PointerEvent) => {
+			if (!dragging) return;
+			const dx = e.clientX - startX;
+			const dy = e.clientY - startY;
+			if (!moved && Math.abs(dx) < THRESHOLD && Math.abs(dy) < THRESHOLD) return;
+			moved = true;
+			container.style.cursor = "grabbing";
+
+			const w = container.offsetWidth || 200;
+			const h = container.offsetHeight || 200;
+			const left = Math.min(Math.max(0, origLeft + dx), window.innerWidth - w);
+			const top = Math.min(Math.max(0, origTop + dy), window.innerHeight - h);
+
+			container.style.left = `${left}px`;
+			container.style.top = `${top}px`;
+			container.style.right = "auto";
+			container.style.bottom = "auto";
+		});
+
+		window.addEventListener("pointerup", () => {
+			if (!dragging) return;
+			dragging = false;
+			container.style.cursor = "grab";
+			if (moved) {
+				try {
+					localStorage.setItem(
+						"l2d-widget-pos",
+						JSON.stringify({
+							left: container.style.left,
+							top: container.style.top,
+						}),
+					);
+				} catch (_) {
+					/* 忽略存储失败 */
+				}
+			}
+		});
+
+		// 恢复上次拖到的位置（等组件自身定位完成后再覆盖）
+		setTimeout(() => {
+			try {
+				const saved = JSON.parse(
+					localStorage.getItem("l2d-widget-pos") || "null",
+				);
+				if (saved?.left && saved?.top) {
+					container.style.left = saved.left;
+					container.style.top = saved.top;
+					container.style.right = "auto";
+					container.style.bottom = "auto";
+				}
+			} catch (_) {
+				/* 忽略解析失败 */
+			}
+		}, 300);
+	}
+
 	function initWidget() {
 		const container = document.getElementById("l2d-widget-container");
 		if (!container) return;
@@ -226,6 +306,7 @@ function serializeMenus(menus: Props["config"]["menus"]) {
 			}
 
 			createWidget(options);
+			setupDrag(container);
 		} catch (e) {
 			console.error("Failed to initialize Live2D widget:", e);
 		}

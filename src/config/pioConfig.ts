@@ -3,7 +3,7 @@ import type { Live2DWidgetConfig, SpineModelConfig } from "../types/pioConfig";
 // Spine 看板娘配置
 export const spineModelConfig: SpineModelConfig = {
 	// Spine 看板娘开关
-	enable: true,
+	enable: false,
 
 	// Spine模型配置
 	model: {
@@ -85,7 +85,7 @@ export const spineModelConfig: SpineModelConfig = {
 // Live2D 看板娘配置 (使用 l2d-widget 库，文档：https://l2d-widget.hacxy.cn)
 export const live2dWidgetConfig: Live2DWidgetConfig = {
 	// Live2D 看板娘开关
-	enable: false,
+	enable: true,
 	// 模型配置，支持单个模型或数组（多模型切换）
 	model: [
 		{
@@ -110,7 +110,7 @@ export const live2dWidgetConfig: Live2DWidgetConfig = {
 		},
 	],
 	// 显示位置：bottom-left 或 bottom-right
-	position: "bottom-left" as const,
+	position: "bottom-right" as const,
 	// 画布尺寸（px）
 	size: { width: 200, height: 200 },
 	// 主题色，用于菜单、状态条等 UI 元素的背景色，默认 'rgba(96,165,250,0.9)'
@@ -157,13 +157,16 @@ export const live2dWidgetConfig: Live2DWidgetConfig = {
 		// 气泡开关
 		enable: true,
 		// 初始欢迎消息
-		welcomeMessage: ["你好呀！", "欢迎来到我的世界！"],
+		welcomeMessage: ["你好呀，我是这里的看板娘～", "随便逛逛吧！"],
 		// 循环提示内容
 		messages: [
-			"有什么需要帮助的吗？",
-			"今天天气真不错呢！",
-			"要不要一起玩游戏？",
-			"记得按时休息哦！",
+			"今天也要好好休息哦。",
+			"右键可以切换角色、让我睡觉。",
+			"按住我可以把我拖到别的地方。",
+			"点我一下，我会动给你看。",
+			"绝区零今天打了吗？",
+			"记得多喝水。",
+			"这个站是我一点点搭起来的。",
 		],
 		// 文字显示时间（ms）
 		duration: 3000,
