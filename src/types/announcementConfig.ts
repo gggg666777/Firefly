@@ -1,5 +1,6 @@
 export type AnnouncementConfig = {
-	// enable属性已移除，现在通过sidebarLayoutConfig统一控制
+	// 是否显示公告（可在后台「公告」里开关）
+	enable?: boolean;
 	title?: string; // 公告栏标题
 	content: string; // 公告栏内容
 	icon?: string; // 公告栏图标

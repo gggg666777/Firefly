@@ -1,0 +1,12 @@
+{
+	"enable": true,
+	"title": "",
+	"content": "欢迎来到 ysnb.store，这里记录绝区零和一些日常。",
+	"closable": true,
+	"link": {
+		"enable": false,
+		"text": "了解更多",
+		"url": "/about/",
+		"external": false
+	}
+}

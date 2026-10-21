@@ -77,3 +77,23 @@ collections:
       - { label: 置顶, name: pinned, widget: boolean, default: false }
       - { label: 位置, name: location, widget: string, required: false, hint: 可留空 }
       - { label: 内容, name: body, widget: markdown }
+
+  - name: settings
+    label: 站点设置
+    files:
+      - name: announcement
+        label: 公告
+        file: src/data/announcement.json
+        fields:
+          - { label: 显示公告, name: enable, widget: boolean, default: true, hint: 关掉后侧边栏不显示 }
+          - { label: 标题, name: title, widget: string, required: false, hint: 留空则显示「公告」 }
+          - { label: 内容, name: content, widget: text }
+          - { label: 允许访客关闭, name: closable, widget: boolean, default: true }
+          - label: 底部链接
+            name: link
+            widget: object
+            fields:
+              - { label: 启用链接, name: enable, widget: boolean, default: false }
+              - { label: 按钮文字, name: text, widget: string, required: false }
+              - { label: 链接地址, name: url, widget: string, required: false }
+              - { label: 在新窗口打开, name: external, widget: boolean, default: false }
