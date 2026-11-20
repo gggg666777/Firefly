@@ -1,0 +1,1358 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#0d9488" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="写文章" />
+<title>写文章 · ysnb.store</title>
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="apple-touch-icon" href="./icon-192.png" />
+<style>
+:root{
+  --bg:#f6f7f8; --card:#fff; --ink:#1a1d1f; --ink-2:#5f6b73; --ink-3:#9aa4ab;
+  --line:#e6e9eb; --accent:#0d9488; --accent-soft:#e6f5f3;
+  --danger:#d9480f; --ok:#2f9e44; --radius:14px;
+  --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{
+  background:var(--bg);color:var(--ink);
+  font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  overscroll-behavior-y:none;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+
+/* ---------- 顶栏 ---------- */
+.bar{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;
+  padding:calc(10px + var(--safe-t)) 14px 10px;
+  background:rgba(246,247,248,.92);backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.bar h1{flex:1;margin:0;font-size:17px;font-weight:600;letter-spacing:.2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .sub{font-size:12px;color:var(--ink-3);font-weight:400;margin-left:6px}
+.icon-btn{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
+  font-size:19px;color:var(--ink-2);transition:background .15s}
+.icon-btn:active{background:#e9ecee}
+.btn{padding:8px 14px;border-radius:10px;font-size:14px;font-weight:500;
+  background:#eceff1;color:var(--ink);transition:transform .1s,opacity .15s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.danger{background:#fdece6;color:var(--danger)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn-sm{padding:6px 11px;font-size:13px;border-radius:9px}
+
+/* ---------- 通用 ---------- */
+.wrap{max-width:640px;margin:0 auto;padding:14px 14px calc(88px + var(--safe-b))}
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
+  padding:16px;margin-bottom:12px}
+.card h2{margin:0 0 4px;font-size:15px;font-weight:600}
+.hint{font-size:12.5px;color:var(--ink-3);line-height:1.65;margin:6px 0 0}
+.field{margin-top:14px}
+.field:first-child{margin-top:0}
+.field label{display:block;font-size:12.5px;color:var(--ink-2);margin-bottom:6px;font-weight:500}
+.field input,.field textarea{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+  background:#fbfcfc;outline:none;transition:border-color .15s,background .15s;
+  -webkit-appearance:none;
+}
+.field input:focus,.field textarea:focus{border-color:var(--accent);background:#fff}
+.field textarea{resize:vertical;line-height:1.7;min-height:80px}
+.row{display:flex;gap:10px}
+.row>*{flex:1;min-width:0}
+.hidden{display:none !important}
+.toast{
+  position:fixed;left:50%;bottom:calc(26px + var(--safe-b));transform:translate(-50%,20px);
+  background:#22282c;color:#fff;font-size:13.5px;padding:10px 18px;border-radius:999px;
+  opacity:0;pointer-events:none;transition:.22s;z-index:100;max-width:88vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.empty{text-align:center;color:var(--ink-3);padding:48px 20px;font-size:13.5px;line-height:1.9}
+
+/* ---------- 列表 ---------- */
+.post{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);
+  border:1px solid var(--line);border-radius:var(--radius);margin-bottom:9px;
+}
+.post:active{background:#fafbfb}
+.post .meta{flex:1;min-width:0}
+.post .t{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post .d{font-size:12px;color:var(--ink-3);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--accent-soft);
+  color:var(--accent);flex:none}
+
+/* ---------- 编辑 ---------- */
+.editor-meta{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:12px}
+#body{
+  width:100%;min-height:44vh;padding:14px 16px;border:1px solid var(--line);
+  border-radius:var(--radius);background:#fff;outline:none;resize:vertical;
+  font-size:15px;line-height:1.8;
+}
+#body:focus{border-color:var(--accent)}
+.toolbar{display:flex;gap:6px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
+.toolbar::-webkit-scrollbar{display:none}
+.toolbar button{flex:none;width:36px;height:36px;border-radius:9px;background:#eceff1;
+  display:grid;place-items:center;font-size:15px;color:var(--ink-2)}
+.toolbar button:active{background:#dfe4e6}
+.toolbar .sep{flex:none;width:1px;background:var(--line);margin:4px 2px}
+.editor-actions{display:flex;gap:10px;margin-top:14px}
+.editor-actions .btn{flex:1;text-align:center;padding:13px;font-size:15px;border-radius:12px}
+
+/* 预览 */
+.preview{background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 16px;min-height:44vh;font-size:15px;line-height:1.8;overflow-wrap:break-word}
+.preview h1,.preview h2,.preview h3{line-height:1.4;margin:1.2em 0 .5em}
+.preview h1{font-size:1.45em}.preview h2{font-size:1.25em}.preview h3{font-size:1.1em}
+.preview p{margin:.7em 0}
+.preview img{max-width:100%;border-radius:10px}
+.preview code{background:#f1f3f4;padding:.15em .4em;border-radius:5px;font-size:.9em}
+.preview pre{background:#f6f8fa;padding:12px;border-radius:10px;overflow-x:auto}
+.preview pre code{background:none;padding:0}
+.preview blockquote{margin:.8em 0;padding:.2em 0 .2em 1em;border-left:3px solid var(--line);color:var(--ink-2)}
+.preview ul,.preview ol{padding-left:1.4em}
+.preview a{color:var(--accent)}
+.preview hr{border:0;border-top:1px solid var(--line);margin:1.4em 0}
+
+/* 开关 */
+.switch{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.switch span{font-size:14px}
+.switch input{display:none}
+.switch i{width:46px;height:27px;border-radius:99px;background:#dfe4e6;position:relative;
+  transition:background .2s;flex:none}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;
+  border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch input:checked + i{background:var(--accent)}
+.switch input:checked + i::after{transform:translateX(19px)}
+
+.steps{counter-reset:s;margin:10px 0 0;padding:0;list-style:none}
+.steps li{counter-increment:s;position:relative;padding-left:26px;margin-bottom:9px;
+  font-size:13px;color:var(--ink-2);line-height:1.7}
+.steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:18px;height:18px;
+  border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:11px;
+  display:grid;place-items:center;font-weight:600}
+code.k{background:#f1f3f4;padding:1px 5px;border-radius:4px;font-size:12.5px}
+
+/* ---------- 底部标签栏 ---------- */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;
+  background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(14px);
+  border-top:1px solid var(--line);padding-bottom:var(--safe-b);
+}
+.tabbar button{flex:1;padding:9px 0 11px;display:flex;flex-direction:column;align-items:center;
+  gap:2px;font-size:11px;color:var(--ink-3);transition:color .15s}
+.tabbar button .ti{font-size:17px;line-height:1;font-weight:500}
+.tabbar button.on{color:var(--accent)}
+.tabbar button.on .ti{font-weight:600}
+
+/* ---------- 动态 ---------- */
+.dyn{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:9px}
+.dyn:active{background:#fafbfb}
+.dyn .head{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-3);margin-bottom:6px}
+.dyn .body{font-size:14.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:break-word}
+.dyn .pin{font-size:10.5px;padding:1px 6px;border-radius:5px;background:#fdf0e6;color:#c2410c}
+.loc{font-size:11.5px;color:var(--ink-3);margin-top:6px}
+
+/* ---------- 公告 ---------- */
+.subhead{font-size:12px;color:var(--ink-3);margin:18px 0 0;font-weight:500}
+</style>
+</head>
+<body>
+
+<!-- ============ 设置 ============ -->
+<section id="view-setup" class="hidden">
+  <div class="bar"><h1>连接仓库</h1></div>
+  <div class="wrap">
+    <div class="card">
+      <h2>只剩一件事：填访问令牌</h2>
+      <p class="hint">仓库、分支、目录已经按你的博客预填好了。你只需要去 GitHub 生成一个令牌粘进来。信息只存在你手机里，不会上传到任何地方。</p>
+
+      <div class="field">
+        <label>GitHub 仓库</label>
+        <input id="f-repo" placeholder="gggg666777/Firefly" autocapitalize="off" autocorrect="off" spellcheck="false" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>分支</label>
+          <input id="f-branch" placeholder="master" autocapitalize="off" spellcheck="false" />
+        </div>
+        <div class="field">
+          <label>文章目录</label>
+          <input id="f-dir" placeholder="src/content/posts" autocapitalize="off" spellcheck="false" />
+        </div>
+      </div>
+      <div class="field">
+        <label>访问令牌（Token）</label>
+        <textarea id="f-token" rows="3" placeholder="github_pat_ 开头的字符串" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+      </div>
+
+      <div class="editor-actions">
+        <button class="btn" id="btn-test">测试连接</button>
+        <button class="btn primary" id="btn-save-cfg">保存</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>怎么拿到 Token</h2>
+      <ol class="steps">
+        <li>手机浏览器打开 <code class="k">github.com/settings/personal-access-tokens/new</code></li>
+        <li>Token name 随便填，Expiration 选 1 年（到期再换）</li>
+        <li>Repository access 选 <b>Only select repositories</b>，只勾 <b>gggg666777/Firefly</b></li>
+        <li>Permissions 展开 <b>Repository permissions</b>，找到 <b>Contents</b>，改成 <b>Read and write</b></li>
+        <li>点最下面 Generate token，复制那串以 <code class="k">github_pat_</code> 开头的字符</li>
+      </ol>
+      <p class="hint">这个令牌只能动你这一个仓库，泄露了也伤不到别的项目。但别截图发群里。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 列表 ============ -->
+<section id="view-list" class="hidden">
+  <div class="bar">
+    <h1>文章<span class="sub" id="list-count"></span></h1>
+    <button class="icon-btn" id="btn-refresh" title="刷新">↻</button>
+    <button class="icon-btn" id="btn-settings" title="设置">⚙</button>
+  </div>
+  <div class="wrap">
+    <button class="btn primary" id="btn-new" style="width:100%;padding:14px;border-radius:12px;font-size:15px;margin-bottom:14px">＋ 写新文章</button>
+    <div id="post-list"></div>
+  </div>
+</section>
+
+<!-- ============ 编辑 ============ -->
+<section id="view-edit" class="hidden">
+  <div class="bar">
+    <button class="icon-btn" id="btn-back" title="返回">‹</button>
+    <h1 id="edit-title">新文章</h1>
+    <button class="btn btn-sm" id="btn-preview">预览</button>
+    <button class="btn btn-sm primary" id="btn-publish">发布</button>
+  </div>
+  <div class="wrap">
+    <div class="editor-meta" id="meta-panel">
+      <div class="field">
+        <label>标题</label>
+        <input id="e-title" placeholder="文章标题" />
+      </div>
+      <div class="field">
+        <label>描述（显示在列表和搜索结果里）</label>
+        <input id="e-desc" placeholder="一句话概括" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>分类</label>
+          <input id="e-cat" placeholder="随笔" />
+        </div>
+        <div class="field">
+          <label>日期</label>
+          <input id="e-date" type="date" />
+        </div>
+      </div>
+      <div class="field">
+        <label>标签（逗号分隔）</label>
+        <input id="e-tags" placeholder="游戏, 折腾" />
+      </div>
+      <div class="field">
+        <div class="switch">
+          <span>存为草稿（不在站点显示）</span>
+          <input type="checkbox" id="e-draft" /><i></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button data-md="bold" title="加粗"><b>B</b></button>
+      <button data-md="italic" title="斜体"><i>I</i></button>
+      <button data-md="h2" title="标题">H</button>
+      <button data-md="link" title="链接">🔗</button>
+      <button data-md="image" title="插入图片">🖼</button>
+      <div class="sep"></div>
+      <button data-md="ul" title="列表">≡</button>
+      <button data-md="quote" title="引用">❝</button>
+      <button data-md="code" title="代码">‹›</button>
+      <div class="sep"></div>
+      <button data-md="upload" title="上传图片" style="width:auto;padding:0 12px;font-size:13px">上传图</button>
+    </div>
+
+    <textarea id="body" placeholder="正文，支持 Markdown。&#10;&#10;## 小标题&#10;**加粗**、*斜体*、[链接](https://...)&#10;- 列表项&#10;> 引用"></textarea>
+
+    <div class="preview hidden" id="preview"></div>
+
+    <div class="editor-actions">
+      <button class="btn" id="btn-stash">存本地草稿</button>
+      <button class="btn primary" id="btn-publish-2">发布到博客</button>
+    </div>
+    <p class="hint" id="edit-hint"></p>
+  </div>
+</section>
+
+<!-- ============ 动态 ============ -->
+<section id="view-dyn" class="hidden">
+  <div class="bar">
+    <h1>动态<span class="sub" id="dyn-count"></span></h1>
+    <button class="icon-btn" id="btn-dyn-refresh" title="刷新">↻</button>
+  </div>
+  <div class="wrap">
+    <button class="btn primary" id="btn-dyn-new" style="width:100%;padding:14px;border-radius:12px;font-size:15px;margin-bottom:14px">＋ 发一条动态</button>
+    <div id="dyn-list"></div>
+  </div>
+</section>
+
+<!-- ============ 发动态 ============ -->
+<section id="view-dynedit" class="hidden">
+  <div class="bar">
+    <button class="icon-btn" id="btn-dyn-back" title="返回">‹</button>
+    <h1 id="dyn-edit-title">发动态</h1>
+    <button class="btn btn-sm primary" id="btn-dyn-publish">发布</button>
+  </div>
+  <div class="wrap">
+    <textarea id="d-body" placeholder="随便说点什么…"
+      style="width:100%;min-height:30vh;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;outline:none;resize:vertical;font-size:15px;line-height:1.8"></textarea>
+    <div class="card" style="margin-top:12px">
+      <div class="field">
+        <label>位置（可留空）</label>
+        <input id="d-loc" placeholder="例如：家里、公司" />
+      </div>
+      <div class="field">
+        <div class="switch">
+          <span>置顶这条动态</span>
+          <input type="checkbox" id="d-pinned" /><i></i>
+        </div>
+      </div>
+      <p class="hint" id="d-time"></p>
+    </div>
+    <div class="editor-actions">
+      <button class="btn primary" id="btn-dyn-publish-2">发布到博客</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 公告 ============ -->
+<section id="view-ann" class="hidden">
+  <div class="bar">
+    <h1>站点公告</h1>
+    <button class="btn btn-sm primary" id="btn-ann-save">保存</button>
+  </div>
+  <div class="wrap">
+    <div class="card">
+      <div class="switch">
+        <span>显示公告</span>
+        <input type="checkbox" id="a-enable" /><i></i>
+      </div>
+      <div class="field">
+        <label>标题（留空则显示「公告」）</label>
+        <input id="a-title" placeholder="公告" />
+      </div>
+      <div class="field">
+        <label>内容</label>
+        <textarea id="a-content" rows="4" placeholder="公告内容"></textarea>
+      </div>
+      <div class="field">
+        <div class="switch">
+          <span>允许访客关闭</span>
+          <input type="checkbox" id="a-closable" /><i></i>
+        </div>
+      </div>
+
+      <p class="subhead">底部链接按钮（可选）</p>
+      <div class="field">
+        <div class="switch">
+          <span>启用链接按钮</span>
+          <input type="checkbox" id="a-link-enable" /><i></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>按钮文字</label>
+        <input id="a-link-text" placeholder="了解更多" />
+      </div>
+      <div class="field">
+        <label>链接地址</label>
+        <input id="a-link-url" placeholder="https://" />
+      </div>
+      <div class="field">
+        <div class="switch">
+          <span>在新窗口打开</span>
+          <input type="checkbox" id="a-link-external" /><i></i>
+        </div>
+      </div>
+    </div>
+    <p class="hint">改的是 <code class="k">src/data/announcement.json</code>，保存后 Cloudflare 重建约 1 分钟生效。</p>
+  </div>
+</section>
+
+<nav class="tabbar hidden" id="tabbar">
+  <button data-tab="list"><span class="ti">文</span>文章</button>
+  <button data-tab="dyn"><span class="ti">动</span>动态</button>
+  <button data-tab="ann"><span class="ti">告</span>公告</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="file-pick" accept="image/*" class="hidden" />
+
+<script>
+"use strict";
+
+/* ============================================================
+   配置与状态
+   ============================================================ */
+const CFG_KEY = "ysnb.cfg.v1";
+const DRAFT_KEY = "ysnb.draft.v1";
+const API = "https://api.github.com";
+
+const DEFAULT_CFG = { repo: "gggg666777/Firefly", branch: "master", dir: "src/content/posts", token: "" };
+
+let cfg = loadCfg();
+let state = {
+  posts: [],
+  editing: null,      // { file, sha, extras:[] }
+  previewing: false,
+  busy: false,
+};
+
+function loadCfg() {
+  try { return Object.assign({}, DEFAULT_CFG, JSON.parse(localStorage.getItem(CFG_KEY) || "{}")); }
+  catch (e) { return Object.assign({}, DEFAULT_CFG); }
+}
+function saveCfg() { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
+function hasCfg() { return !!(cfg.repo && cfg.token && cfg.branch && cfg.dir); }
+
+/* ============================================================
+   小工具
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+
+function toast(msg, ms) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), ms || 2400);
+}
+
+function b64encode(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
+}
+function b64decode(b64) {
+  const bin = atob(String(b64).replace(/\s/g, ""));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+function todayISO() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+
+/* 文件名 slug：保留中英文数字，其余转 - */
+function slugify(s) {
+  return String(s || "")
+    .trim()
+    .replace(/[\s\u3000]+/g, "-")
+    .replace(/[^\p{L}\p{N}\-_]/gu, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60) || "post-" + Date.now();
+}
+
+/* YAML 值转义 */
+function yamlStr(s) {
+  const v = String(s == null ? "" : s).replace(/\r?\n/g, " ").trim();
+  return '"' + v.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
+}
+
+/* ============================================================
+   GitHub API
+   ============================================================ */
+async function gh(path, opts) {
+  opts = opts || {};
+  const url = API + "/repos/" + cfg.repo + path;
+  let res;
+  try {
+    res = await fetch(url, {
+      method: opts.method || "GET",
+      headers: Object.assign({
+        "Authorization": "Bearer " + cfg.token,
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      }, opts.headers || {}),
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+  } catch (e) {
+    throw new Error("网络不通，检查手机网络或代理");
+  }
+
+  if (res.status === 404) { const e = new Error("NOT_FOUND"); e.code = 404; throw e; }
+  if (res.status === 401) throw new Error("令牌无效或已过期，请重新生成");
+  if (res.status === 403) throw new Error("没有权限：确认 Contents 权限是 Read and write");
+  if (res.status === 409) throw new Error("冲突：文件刚被别处改过，刷新后重试");
+  if (res.status === 422) throw new Error("参数被拒绝，检查仓库和分支名");
+  if (!res.ok) throw new Error("GitHub 返回 " + res.status);
+
+  if (opts.raw) return res;
+  return res.json();
+}
+
+function dirPath() {
+  return "/contents/" + cfg.dir.replace(/^\/|\/$/g, "") + "?ref=" + encodeURIComponent(cfg.branch);
+}
+
+async function testConnection() {
+  // 1. 仓库可读
+  const repo = await gh("", {});
+  let branch = cfg.branch;
+  // 2. 分支不存在则试 master
+  try {
+    await gh("/contents/" + cfg.dir.replace(/^\/|\/$/g, "") + "?ref=" + encodeURIComponent(branch));
+  } catch (e) {
+    if (e.code === 404) {
+      const alt = branch === "main" ? "master" : "main";
+      try {
+        await gh("/contents/" + cfg.dir.replace(/^\/|\/$/g, "") + "?ref=" + encodeURIComponent(alt));
+        branch = alt;
+        cfg.branch = alt;
+        $("f-branch").value = alt;
+      } catch (e2) {
+        throw new Error("找不到文章目录 " + cfg.dir + "（分支 " + branch + "）");
+      }
+    } else { throw e; }
+  }
+  return { repo: repo.full_name, branch: branch };
+}
+
+async function listPosts() {
+  const data = await gh(dirPath(), {});
+  if (!Array.isArray(data)) throw new Error("文章目录不是文件夹");
+  return data
+    .filter((f) => f.type === "file" && /\.mdx?$/i.test(f.name))
+    .map((f) => {
+      const m = f.name.match(/^(\d{4}-\d{2}-\d{2})-(.+)\.mdx?$/i);
+      return {
+        file: f.name,
+        sha: f.sha,
+        size: f.size,
+        date: m ? m[1] : "",
+        title: m ? m[2] : f.name.replace(/\.mdx?$/i, ""),
+      };
+    })
+    .sort((a, b) => (a.file < b.file ? 1 : -1));
+}
+
+async function readPost(file) {
+  const data = await gh("/contents/" + cfg.dir.replace(/^\/|\/$/g, "") + "/" + encodeURIComponent(file) + "?ref=" + encodeURIComponent(cfg.branch), {});
+  const text = b64decode(data.content);
+  return { text: text, sha: data.sha };
+}
+
+/* 按完整路径读文件（动态、公告用） */
+async function readFileAt(path) {
+  const data = await gh("/contents/" + path.replace(/^\/|\/$/g, "") + "?ref=" + encodeURIComponent(cfg.branch), {});
+  return { text: b64decode(data.content), sha: data.sha };
+}
+
+async function writeFile(path, contentStr, message, sha) {
+  const body = {
+    message: message,
+    content: b64encode(contentStr),
+    branch: cfg.branch,
+  };
+  if (sha) body.sha = sha;
+  return gh("/contents/" + path.replace(/^\/|\/$/g, ""), { method: "PUT", body: body });
+}
+
+/* ============================================================
+   frontmatter 解析 / 生成
+   ============================================================ */
+const MANAGED = ["title", "published", "description", "tags", "category", "draft", "slug"];
+
+function splitFrontmatter(text) {
+  const t = text.replace(/^\uFEFF/, "");
+  if (!t.startsWith("---")) return { fm: "", body: t };
+  const end = t.indexOf("\n---", 3);
+  if (end === -1) return { fm: "", body: t };
+  const fm = t.slice(3, end).replace(/^\r?\n/, "");
+  let body = t.slice(end + 4);
+  body = body.replace(/^(?:\r?\n)+/, "");
+  return { fm: fm, body: body };
+}
+
+/* 去掉 YAML 引号并还原转义 */
+function unq(s) {
+  let v = String(s == null ? "" : s).trim();
+  if ((v.length > 1) && ((v[0] === '"' && v[v.length - 1] === '"') || (v[0] === "'" && v[v.length - 1] === "'"))) {
+    v = v.slice(1, -1);
+  }
+  return v.replace(/\\(["'\\])/g, "$1");
+}
+
+function parseFm(fm, managedList) {
+  const list = managedList || MANAGED;
+  const out = { fields: {}, extras: [] };
+  const lines = fm.split(/\r?\n/);
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const m = line.match(/^([A-Za-z_][\w-]*)\s*:\s*(.*)$/);
+    if (!m) { if (line.trim()) out.extras.push(line); i++; continue; }
+
+    const key = m[1];
+    const val = m[2];
+    const managed = list.indexOf(key) !== -1;
+    const raw = [line];
+
+    // 块状数组：tags:\n  - a\n  - b
+    if (val.trim() === "") {
+      const items = [];
+      let j = i + 1;
+      while (j < lines.length && /^\s*-\s+/.test(lines[j])) {
+        raw.push(lines[j]);
+        items.push(unq(lines[j].replace(/^\s*-\s+/, "")));
+        j++;
+      }
+      if (items.length) {
+        if (managed) out.fields[key] = items; else out.extras.push.apply(out.extras, raw);
+        i = j;
+        continue;
+      }
+      if (managed) out.fields[key] = ""; else out.extras.push(line);
+      i++;
+      continue;
+    }
+
+    // 行内数组 [a, b]
+    if (/^\[.*\]$/.test(val.trim())) {
+      const inner = val.trim().slice(1, -1).trim();
+      const arr = inner ? inner.split(",").map((s) => unq(s)).filter(Boolean) : [];
+      if (managed) out.fields[key] = arr; else out.extras.push(line);
+      i++;
+      continue;
+    }
+
+    if (managed) out.fields[key] = unq(val); else out.extras.push(line);
+    i++;
+  }
+  return out;
+}
+
+function buildDocument(fields, extras, body) {
+  const lines = ["---"];
+  lines.push("title: " + yamlStr(fields.title));
+  lines.push("published: " + (fields.published || todayISO()));
+  if (fields.description) lines.push("description: " + yamlStr(fields.description));
+  const tags = (fields.tags || []).filter(Boolean);
+  lines.push("tags: [" + tags.map(yamlStr).join(", ") + "]");
+  if (fields.category) lines.push("category: " + yamlStr(fields.category));
+  if (fields.draft) lines.push("draft: true");
+  if (fields.slug) lines.push("slug: " + yamlStr(fields.slug));
+  // 保留原有未管理的字段（pinned / series / licenseName ...）
+  (extras || []).forEach((l) => { if (l.trim()) lines.push(l); });
+  lines.push("---");
+  lines.push("");
+  lines.push(String(body || "").replace(/^\r?\n/, ""));
+  return lines.join("\n");
+}
+
+/* ============================================================
+   极简 Markdown 预览
+   ============================================================ */
+function esc(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function renderMarkdown(src) {
+  const s = String(src || "");
+  const blocks = [];
+  // 代码块先抽走（内容在抽取时就转义）
+  const withPlaceholders = s.replace(/```([\w-]*)\n([\s\S]*?)```/g, (m, lang, code) => {
+    blocks.push("<pre><code>" + esc(code.replace(/\n$/, "")) + "</code></pre>");
+    return "\u0000B" + (blocks.length - 1) + "\u0000";
+  });
+
+  const lines = withPlaceholders.split(/\r?\n/);
+  const out = [];
+  let inUl = false, inOl = false, inQuote = false;
+
+  const closeLists = () => {
+    if (inUl) { out.push("</ul>"); inUl = false; }
+    if (inOl) { out.push("</ol>"); inOl = false; }
+  };
+  const closeQuote = () => { if (inQuote) { out.push("</blockquote>"); inQuote = false; } };
+
+  for (const line of lines) {
+    // 代码块占位
+    if (/^\u0000B\d+\u0000$/.test(line.trim())) {
+      closeLists(); closeQuote();
+      out.push(line.trim());
+      continue;
+    }
+    if (!line.trim()) { closeLists(); closeQuote(); continue; }
+
+    // 块级判断一律基于「未转义的原始行」，输出时才转义
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if (h) {
+      closeLists(); closeQuote();
+      const lv = Math.min(h[1].length, 3);
+      out.push("<h" + lv + ">" + inline(esc(h[2])) + "</h" + lv + ">");
+      continue;
+    }
+
+    if (/^(-{3,}|\*{3,})$/.test(line.trim())) { closeLists(); closeQuote(); out.push("<hr />"); continue; }
+
+    const q = line.match(/^>\s?(.*)$/);
+    if (q) {
+      closeLists();
+      if (!inQuote) { out.push("<blockquote>"); inQuote = true; }
+      out.push("<p>" + inline(esc(q[1])) + "</p>");
+      continue;
+    }
+
+    const ul = line.match(/^\s*[-*+]\s+(.*)$/);
+    if (ul) {
+      closeQuote();
+      if (!inUl) { out.push("<ul>"); inUl = true; }
+      out.push("<li>" + inline(esc(ul[1])) + "</li>");
+      continue;
+    }
+
+    const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+    if (ol) {
+      closeQuote();
+      if (!inOl) { out.push("<ol>"); inOl = true; }
+      out.push("<li>" + inline(esc(ol[1])) + "</li>");
+      continue;
+    }
+
+    closeLists(); closeQuote();
+    out.push("<p>" + inline(esc(line)) + "</p>");
+  }
+  closeLists(); closeQuote();
+
+  let html = out.join("\n");
+  html = html.replace(/\u0000B(\d+)\u0000/g, (m, i) => blocks[+i] || "");
+  return html;
+
+  function inline(t) {
+    return t
+      .replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, '<img alt="$1" src="$2" />')
+      .replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[^*])\*([^*]+)\*/g, "$1<em>$2</em>")
+      .replace(/~~([^~]+)~~/g, "<del>$1</del>");
+  }
+}
+
+/* ============================================================
+   视图切换
+   ============================================================ */
+function show(view) {
+  ["setup", "list", "edit", "dyn", "dynedit", "ann"].forEach((v) => {
+    $("view-" + v).classList.toggle("hidden", v !== view);
+  });
+  $("tabbar").classList.toggle("hidden", ["list", "dyn", "ann"].indexOf(view) === -1);
+  document.querySelectorAll("#tabbar button").forEach((b) => {
+    b.classList.toggle("on", b.dataset.tab === view);
+  });
+  window.scrollTo(0, 0);
+}
+
+/* ============================================================
+   设置页
+   ============================================================ */
+function fillSetup() {
+  $("f-repo").value = cfg.repo || "";
+  $("f-branch").value = cfg.branch || "master";
+  $("f-dir").value = cfg.dir || "src/content/posts";
+  $("f-token").value = cfg.token || "";
+}
+
+function readSetup() {
+  cfg.repo = $("f-repo").value.trim().replace(/^https?:\/\/github\.com\//i, "").replace(/\.git$/i, "").replace(/\/+$/, "");
+  cfg.branch = $("f-branch").value.trim() || "main";
+  cfg.dir = $("f-dir").value.trim() || "src/content/posts";
+  cfg.token = $("f-token").value.trim();
+}
+
+$("btn-test").addEventListener("click", async () => {
+  readSetup();
+  if (!cfg.repo || !cfg.token) return toast("仓库和令牌都要填");
+  const btn = $("btn-test");
+  btn.disabled = true; btn.textContent = "测试中…";
+  try {
+    const r = await testConnection();
+    toast("连接成功：" + r.repo + "（" + r.branch + "）", 3000);
+  } catch (e) {
+    toast(e.message, 4000);
+  } finally {
+    btn.disabled = false; btn.textContent = "测试连接";
+  }
+});
+
+$("btn-save-cfg").addEventListener("click", async () => {
+  readSetup();
+  if (!cfg.repo || !cfg.token) return toast("仓库和令牌都要填");
+  saveCfg();
+  toast("已保存");
+  await enterList();
+});
+
+/* ============================================================
+   列表页
+   ============================================================ */
+async function enterList() {
+  show("list");
+  await refreshList();
+}
+
+async function refreshList() {
+  const box = $("post-list");
+  box.innerHTML = '<div class="empty">读取中…</div>';
+  try {
+    state.posts = await listPosts();
+    $("list-count").textContent = state.posts.length ? state.posts.length + " 篇" : "";
+    if (!state.posts.length) {
+      box.innerHTML = '<div class="empty">还没有文章<br />点上面那个按钮写第一篇</div>';
+      return;
+    }
+    box.innerHTML = state.posts.map((p, i) =>
+      '<div class="post" data-i="' + i + '">' +
+        '<div class="meta">' +
+          '<div class="t">' + esc(p.title) + "</div>" +
+          '<div class="d">' + esc(p.date || "—") + " · " + Math.round(p.size / 102.4) / 10 + " KB</div>" +
+        "</div>" +
+        '<div class="tag">编辑</div>' +
+      "</div>"
+    ).join("");
+    Array.from(box.querySelectorAll(".post")).forEach((el) => {
+      el.addEventListener("click", () => {
+        const p = state.posts[+el.dataset.i];
+        openPost(p.file, p.sha);
+      });
+    });
+  } catch (e) {
+    box.innerHTML = '<div class="empty">加载失败：' + esc(e.message) + "</div>";
+  }
+}
+
+$("btn-refresh").addEventListener("click", refreshList);
+$("btn-settings").addEventListener("click", () => { fillSetup(); show("setup"); });
+$("btn-new").addEventListener("click", () => newPost());
+
+/* ============================================================
+   编辑页
+   ============================================================ */
+function setEditMode(on) {
+  state.previewing = on;
+  $("body").classList.toggle("hidden", on);
+  $("preview").classList.toggle("hidden", !on);
+  $("meta-panel").classList.toggle("hidden", on);
+  $("btn-preview").textContent = on ? "继续写" : "预览";
+  if (on) $("preview").innerHTML = renderMarkdown($("body").value);
+}
+
+function newPost() {
+  state.editing = { file: null, sha: null, extras: [], slug: "" };
+  $("edit-title").textContent = "新文章";
+  $("e-title").value = "";
+  $("e-desc").value = "";
+  $("e-cat").value = "";
+  $("e-tags").value = "";
+  $("e-date").value = todayISO();
+  $("e-draft").checked = false;
+  $("body").value = "";
+  $("edit-hint").textContent = "文件名会自动生成：日期-标题.md";
+  setEditMode(false);
+  show("edit");
+
+  // 恢复上次未发布的本地草稿
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (d && d.body) {
+      if (confirm("发现上次未发布的草稿「" + (d.title || "无标题") + "」，恢复吗？")) {
+        $("e-title").value = d.title || "";
+        $("e-desc").value = d.desc || "";
+        $("e-cat").value = d.cat || "";
+        $("e-tags").value = d.tags || "";
+        $("e-date").value = d.date || todayISO();
+        $("e-draft").checked = !!d.draft;
+        $("body").value = d.body;
+      } else {
+        localStorage.removeItem(DRAFT_KEY);
+      }
+    }
+  } catch (e) {}
+}
+
+async function openPost(file, sha) {
+  show("edit");
+  $("edit-title").textContent = "读取中…";
+  try {
+    const r = await readPost(file);
+    const parts = splitFrontmatter(r.text);
+    const parsed = parseFm(parts.fm);
+    const f = parsed.fields;
+
+    state.editing = { file: file, sha: r.sha, extras: parsed.extras, slug: f.slug || "" };
+
+    $("edit-title").textContent = "编辑";
+    $("e-title").value = f.title || "";
+    $("e-desc").value = typeof f.description === "string" ? f.description : "";
+    $("e-cat").value = typeof f.category === "string" ? f.category : "";
+    $("e-tags").value = Array.isArray(f.tags) ? f.tags.join(", ") : (f.tags || "");
+    $("e-date").value = f.published || todayISO();
+    $("e-draft").checked = String(f.draft).toLowerCase() === "true";
+    $("body").value = parts.body;
+    $("edit-hint").textContent = "正在编辑 " + file + "（原文件里的其他字段会保留）";
+    setEditMode(false);
+  } catch (e) {
+    toast("读取失败：" + e.message, 3500);
+    show("list");
+  }
+}
+
+$("btn-back").addEventListener("click", () => {
+  if ($("body").value.trim() && !confirm("返回会丢掉当前未发布的内容，确定？")) return;
+  show("list");
+});
+
+$("btn-preview").addEventListener("click", () => setEditMode(!state.previewing));
+
+/* 工具栏：在光标处插入 Markdown */
+$("body").addEventListener("input", () => {
+  if (state.previewing) return;
+  saveDraftLocal(true);
+});
+
+document.querySelectorAll(".toolbar button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const kind = btn.dataset.md;
+    const ta = $("body");
+    if (kind === "upload") { $("file-pick").click(); return; }
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    const sel = ta.value.slice(start, end);
+    let text = "", cursor = 0;
+
+    if (kind === "bold") { text = "**" + (sel || "加粗文字") + "**"; cursor = sel ? text.length : 2; }
+    else if (kind === "italic") { text = "*" + (sel || "斜体文字") + "*"; cursor = sel ? text.length : 1; }
+    else if (kind === "h2") { text = "\n## " + (sel || "小标题") + "\n"; cursor = 4; }
+    else if (kind === "link") { text = "[" + (sel || "链接文字") + "](https://)"; cursor = text.length - 1; }
+    else if (kind === "image") { text = "![" + (sel || "图片说明") + "](/assets/uploads/)"; cursor = text.length - 1; }
+    else if (kind === "ul") { text = "\n- " + (sel || "列表项") + "\n"; cursor = 3; }
+    else if (kind === "quote") { text = "\n> " + (sel || "引用内容") + "\n"; cursor = 3; }
+    else if (kind === "code") {
+      if (sel.includes("\n")) { text = "\n```\n" + sel + "\n```\n"; cursor = 5; }
+      else { text = "`" + (sel || "code") + "`"; cursor = 1; }
+    }
+
+    ta.focus();
+    ta.setRangeText(text, start, end, "end");
+    if (!sel) { ta.setSelectionRange(start + cursor, start + cursor); }
+    saveDraftLocal(true);
+  });
+});
+
+/* 图片上传：写进 public/images/mobile/ */
+$("file-pick").addEventListener("change", async (ev) => {
+  const file = ev.target.files && ev.target.files[0];
+  ev.target.value = "";
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) return toast("图片超过 5MB，先压缩一下");
+
+  toast("上传中…", 20000);
+  try {
+    const buf = await file.arrayBuffer();
+    let bin = "";
+    const bytes = new Uint8Array(buf);
+    const CHUNK = 0x8000;
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+    }
+    const b64 = btoa(bin);
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const name = "m" + Date.now() + "." + ext;
+    // 与 Sveltia CMS 的 media_folder 保持一致，图片会进同一个媒体库
+    const path = "public/assets/uploads/" + name;
+
+    await gh("/contents/" + path, {
+      method: "PUT",
+      body: { message: "chore(images): 手机端上传 " + name, content: b64, branch: cfg.branch },
+    });
+
+    const md = "![" + (file.name.replace(/\.[^.]+$/, "") || "图片") + "](/assets/uploads/" + name + ")";
+    const ta = $("body");
+    const pos = ta.selectionStart || ta.value.length;
+    ta.setRangeText(md, pos, pos, "end");
+    saveDraftLocal(true);
+    toast("图片已上传，Markdown 已插入");
+  } catch (e) {
+    toast("上传失败：" + e.message, 3500);
+  }
+});
+
+/* 本地草稿 */
+let draftTimer = null;
+function saveDraftLocal(silent) {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        title: $("e-title").value,
+        desc: $("e-desc").value,
+        cat: $("e-cat").value,
+        tags: $("e-tags").value,
+        date: $("e-date").value,
+        draft: $("e-draft").checked,
+        body: $("body").value,
+      }));
+      if (!silent) toast("已存到手机本地");
+    } catch (e) {}
+  }, silent ? 800 : 0);
+}
+
+$("btn-stash").addEventListener("click", () => saveDraftLocal(false));
+
+/* 发布 */
+async function publish() {
+  if (state.busy) return;
+  const title = $("e-title").value.trim();
+  const body = $("body").value;
+  if (!title) return toast("先写个标题");
+  if (!body.trim()) return toast("正文还是空的");
+
+  const date = $("e-date").value || todayISO();
+  const tags = $("e-tags").value.split(/[,，]/).map((s) => s.trim()).filter(Boolean);
+  const fields = {
+    title: title,
+    published: date,
+    description: $("e-desc").value.trim(),
+    tags: tags,
+    category: $("e-cat").value.trim(),
+    draft: $("e-draft").checked,
+    slug: "",
+  };
+
+  const isNew = !state.editing || !state.editing.file;
+  let file;
+  if (isNew) {
+    file = date + "-" + slugify(title) + ".md";
+    fields.slug = slugify(title);
+  } else {
+    file = state.editing.file;
+    // 原有 slug 优先，避免编辑时把文章永久链接改掉
+    fields.slug = state.editing.slug ||
+      file.replace(/^\d{4}-\d{2}-\d{2}-/, "").replace(/\.mdx?$/i, "");
+  }
+
+  const doc = buildDocument(fields, state.editing ? state.editing.extras : [], body);
+  const path = cfg.dir.replace(/^\/|\/$/g, "") + "/" + file;
+
+  state.busy = true;
+  setPublishing(true);
+  try {
+    let sha = state.editing ? state.editing.sha : null;
+    if (isNew) {
+      // 已存在同名文件 → 覆盖需要 sha
+      try {
+        const ex = await gh("/contents/" + path + "?ref=" + encodeURIComponent(cfg.branch), {});
+        if (!confirm("已经有一篇 " + file + "，要覆盖它吗？")) {
+          state.busy = false; setPublishing(false);
+          return;
+        }
+        sha = ex.sha;
+      } catch (e) {
+        if (e.code !== 404) throw e;
+      }
+    }
+
+    await writeFile(path, doc, (isNew ? "post: " : "post(update): ") + title, sha);
+    localStorage.removeItem(DRAFT_KEY);
+
+    state.editing = { file: file, sha: null, extras: state.editing ? state.editing.extras : [], slug: fields.slug };
+    toast(fields.draft ? "草稿已保存" : "已发布，等 Cloudflare 重建约 1 分钟", 4200);
+    setTimeout(() => { show("list"); refreshList(); }, 900);
+  } catch (e) {
+    toast("失败：" + e.message, 4000);
+  } finally {
+    state.busy = false;
+    setPublishing(false);
+  }
+}
+
+function setPublishing(on) {
+  ["btn-publish", "btn-publish-2"].forEach((id) => {
+    const b = $(id);
+    if (!b) return;
+    b.disabled = on;
+    b.textContent = on ? (id === "btn-publish" ? "发布中" : "发布中…") : (id === "btn-publish" ? "发布" : "发布到博客");
+  });
+}
+
+$("btn-publish").addEventListener("click", publish);
+$("btn-publish-2").addEventListener("click", publish);
+
+/* ============================================================
+   动态（src/content/dynamic）
+   ============================================================ */
+const DYN_DIR = "src/content/dynamic";
+const DYN_FIELDS = ["published", "pinned", "location"];
+
+const dynState = { list: [], editing: null };
+
+function pad2(n) { return String(n).padStart(2, "0"); }
+
+function nowStamp() {
+  const d = new Date();
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+    " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
+}
+function nowFileStamp() {
+  const d = new Date();
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+    "-" + pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds());
+}
+
+function buildDynDocument(f, extras, body) {
+  const lines = ["---"];
+  lines.push("published: " + (f.published || nowStamp()));
+  if (f.pinned) lines.push("pinned: true");
+  if (f.location) lines.push("location: " + yamlStr(f.location));
+  (extras || []).forEach((l) => { if (l.trim()) lines.push(l); });
+  lines.push("---");
+  lines.push("");
+  lines.push(String(body || "").replace(/^\r?\n/, ""));
+  return lines.join("\n");
+}
+
+async function listDyn() {
+  let data;
+  try {
+    data = await gh("/contents/" + DYN_DIR + "?ref=" + encodeURIComponent(cfg.branch), {});
+  } catch (e) {
+    // 目录还不存在：第一次发动态时 GitHub 会自动建，这里当作空列表
+    if (e.code === 404) return [];
+    throw e;
+  }
+  if (!Array.isArray(data)) return [];
+  return data
+    .filter((f) => f.type === "file" && /\.mdx?$/i.test(f.name))
+    .map((f) => ({ file: f.name, sha: f.sha, size: f.size }))
+    .sort((a, b) => (a.file < b.file ? 1 : -1))
+    .slice(0, 20);
+}
+
+async function refreshDyn() {
+  const box = $("dyn-list");
+  box.innerHTML = '<div class="empty">读取中…</div>';
+  try {
+    dynState.list = await listDyn();
+    $("dyn-count").textContent = dynState.list.length ? dynState.list.length + " 条" : "";
+    if (!dynState.list.length) {
+      box.innerHTML = '<div class="empty">还没有动态<br />点上面那个按钮发一条</div>';
+      return;
+    }
+
+    const loaded = await Promise.all(dynState.list.map(async (it) => {
+      try {
+        const r = await readFileAt(DYN_DIR + "/" + it.file);
+        const parts = splitFrontmatter(r.text);
+        const parsed = parseFm(parts.fm, DYN_FIELDS);
+        return {
+          file: it.file,
+          sha: r.sha,
+          published: parsed.fields.published || it.file.slice(0, 10),
+          pinned: String(parsed.fields.pinned).toLowerCase() === "true",
+          location: parsed.fields.location || "",
+          body: parts.body.trim(),
+          extras: parsed.extras,
+        };
+      } catch (e) {
+        return { file: it.file, sha: it.sha, published: it.file.slice(0, 10), pinned: false, location: "", body: "(读取失败)", extras: [] };
+      }
+    }));
+
+    box.innerHTML = loaded.map((p, i) =>
+      '<div class="dyn" data-i="' + i + '">' +
+        '<div class="head">' +
+          (p.pinned ? '<span class="pin">置顶</span>' : "") +
+          "<span>" + esc(String(p.published)) + "</span>" +
+        "</div>" +
+        '<div class="body">' + esc(p.body.slice(0, 140)) + (p.body.length > 140 ? "…" : "") + "</div>" +
+        (p.location ? '<div class="loc">' + esc(p.location) + "</div>" : "") +
+      "</div>"
+    ).join("");
+
+    Array.from(box.querySelectorAll(".dyn")).forEach((el) => {
+      el.addEventListener("click", () => openDyn(loaded[+el.dataset.i]));
+    });
+  } catch (e) {
+    box.innerHTML = '<div class="empty">加载失败：' + esc(e.message) + "</div>";
+  }
+}
+
+function newDyn() {
+  dynState.editing = null;
+  $("dyn-edit-title").textContent = "发动态";
+  $("d-body").value = "";
+  $("d-loc").value = "";
+  $("d-pinned").checked = false;
+  $("d-time").textContent = "发布时间：" + nowStamp();
+  show("dynedit");
+}
+
+async function openDyn(item) {
+  show("dynedit");
+  $("dyn-edit-title").textContent = "编辑动态";
+  dynState.editing = { file: item.file, sha: item.sha, extras: item.extras || [], published: item.published };
+  $("d-body").value = item.body;
+  $("d-loc").value = item.location || "";
+  $("d-pinned").checked = !!item.pinned;
+  $("d-time").textContent = "发布时间：" + (item.published || "");
+}
+
+async function saveDyn() {
+  const body = $("d-body").value;
+  if (!body.trim()) return toast("内容还是空的");
+
+  const isNew = !dynState.editing;
+  const file = isNew ? nowFileStamp() + ".md" : dynState.editing.file;
+  const fields = {
+    published: isNew ? nowStamp() : dynState.editing.published,
+    pinned: $("d-pinned").checked,
+    location: $("d-loc").value.trim(),
+  };
+  const doc = buildDynDocument(fields, isNew ? [] : dynState.editing.extras, body);
+  const path = DYN_DIR + "/" + file;
+
+  setDynPublishing(true);
+  try {
+    await writeFile(path, doc, (isNew ? "cms: 新建动态「" : "cms: 更新动态「") + file + "」", isNew ? null : dynState.editing.sha);
+    toast("已发布，约 1 分钟后出现在站点上", 4000);
+    setTimeout(() => { show("dyn"); refreshDyn(); }, 700);
+  } catch (e) {
+    toast("失败：" + e.message, 4000);
+  } finally {
+    setDynPublishing(false);
+  }
+}
+
+function setDynPublishing(on) {
+  ["btn-dyn-publish", "btn-dyn-publish-2"].forEach((id) => {
+    const b = $(id);
+    if (!b) return;
+    b.disabled = on;
+    b.textContent = on ? "发布中…" : (id === "btn-dyn-publish" ? "发布" : "发布到博客");
+  });
+}
+
+/* ============================================================
+   公告（src/data/announcement.json）
+   ============================================================ */
+const ANN_PATH = "src/data/announcement.json";
+let annSha = null;
+let annRaw = {};
+
+async function loadAnnounce() {
+  try {
+    const r = await readFileAt(ANN_PATH);
+    annSha = r.sha;
+    annRaw = JSON.parse(r.text || "{}");
+  } catch (e) {
+    if (e.code === 404) { annSha = null; annRaw = {}; }
+    else throw e;
+  }
+  const link = annRaw.link || {};
+  $("a-enable").checked = annRaw.enable !== false;
+  $("a-title").value = annRaw.title || "";
+  $("a-content").value = annRaw.content || "";
+  $("a-closable").checked = annRaw.closable !== false;
+  $("a-link-enable").checked = !!link.enable;
+  $("a-link-text").value = link.text || "";
+  $("a-link-url").value = link.url || "";
+  $("a-link-external").checked = !!link.external;
+}
+
+async function saveAnnounce() {
+  const btn = $("btn-ann-save");
+  btn.disabled = true; btn.textContent = "保存中";
+  try {
+    const obj = Object.assign({}, annRaw);
+    obj.enable = $("a-enable").checked;
+    obj.title = $("a-title").value.trim();
+    obj.content = $("a-content").value;
+    obj.closable = $("a-closable").checked;
+    obj.link = Object.assign({}, annRaw.link || {}, {
+      enable: $("a-link-enable").checked,
+      text: $("a-link-text").value.trim(),
+      url: $("a-link-url").value.trim(),
+      external: $("a-link-external").checked,
+    });
+
+    const json = JSON.stringify(obj, null, 2) + "\n";
+    const res = await writeFile(ANN_PATH, json, "cms: 更新站点公告", annSha);
+    annSha = (res && res.content && res.content.sha) || annSha;
+    annRaw = obj;
+    toast("公告已保存，约 1 分钟后生效", 3500);
+  } catch (e) {
+    toast("保存失败：" + e.message, 4000);
+  } finally {
+    btn.disabled = false; btn.textContent = "保存";
+  }
+}
+
+/* ============================================================
+   底部标签栏 & 新页面事件
+   ============================================================ */
+document.querySelectorAll("#tabbar button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const t = btn.dataset.tab;
+    if (t === "list") { show("list"); refreshList(); }
+    else if (t === "dyn") { show("dyn"); refreshDyn(); }
+    else { show("ann"); loadAnnounce().catch((e) => toast(e.message, 3500)); }
+  });
+});
+
+$("btn-dyn-refresh").addEventListener("click", refreshDyn);
+$("btn-dyn-new").addEventListener("click", newDyn);
+$("btn-dyn-back").addEventListener("click", () => {
+  if ($("d-body").value.trim() && !confirm("返回会丢掉没发布的内容，确定？")) return;
+  show("dyn");
+});
+$("btn-dyn-publish").addEventListener("click", saveDyn);
+$("btn-dyn-publish-2").addEventListener("click", saveDyn);
+$("btn-ann-save").addEventListener("click", saveAnnounce);
+
+/* ============================================================
+   启动
+   ============================================================ */
+(function boot() {
+  if (hasCfg()) {
+    show("list");
+    refreshList();
+  } else {
+    fillSetup();
+    show("setup");
+  }
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
+    });
+  }
+})();
+</script>
+</body>
+</html>
