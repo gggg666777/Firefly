@@ -51,7 +51,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .btn-sm{padding:6px 11px;font-size:13px;border-radius:9px}
 
 /* ---------- 通用 ---------- */
-.wrap{max-width:640px;margin:0 auto;padding:14px 14px calc(28px + var(--safe-b))}
+.wrap{max-width:640px;margin:0 auto;padding:14px 14px calc(88px + var(--safe-b))}
 .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
   padding:16px;margin-bottom:12px}
 .card h2{margin:0 0 4px;font-size:15px;font-weight:600}
@@ -141,6 +141,30 @@ button{cursor:pointer;border:0;background:none;padding:0}
   border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:11px;
   display:grid;place-items:center;font-weight:600}
 code.k{background:#f1f3f4;padding:1px 5px;border-radius:4px;font-size:12.5px}
+
+/* ---------- 底部标签栏 ---------- */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;
+  background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(14px);
+  border-top:1px solid var(--line);padding-bottom:var(--safe-b);
+}
+.tabbar button{flex:1;padding:9px 0 11px;display:flex;flex-direction:column;align-items:center;
+  gap:2px;font-size:11px;color:var(--ink-3);transition:color .15s}
+.tabbar button .ti{font-size:17px;line-height:1;font-weight:500}
+.tabbar button.on{color:var(--accent)}
+.tabbar button.on .ti{font-weight:600}
+
+/* ---------- 动态 ---------- */
+.dyn{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:9px}
+.dyn:active{background:#fafbfb}
+.dyn .head{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-3);margin-bottom:6px}
+.dyn .body{font-size:14.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:break-word}
+.dyn .pin{font-size:10.5px;padding:1px 6px;border-radius:5px;background:#fdf0e6;color:#c2410c}
+.loc{font-size:11.5px;color:var(--ink-3);margin-top:6px}
+
+/* ---------- 公告 ---------- */
+.subhead{font-size:12px;color:var(--ink-3);margin:18px 0 0;font-weight:500}
 </style>
 </head>
 <body>
@@ -270,6 +294,106 @@ code.k{background:#f1f3f4;padding:1px 5px;border-radius:4px;font-size:12.5px}
     <p class="hint" id="edit-hint"></p>
   </div>
 </section>
+
+<!-- ============ 动态 ============ -->
+<section id="view-dyn" class="hidden">
+  <div class="bar">
+    <h1>动态<span class="sub" id="dyn-count"></span></h1>
+    <button class="icon-btn" id="btn-dyn-refresh" title="刷新">↻</button>
+  </div>
+  <div class="wrap">
+    <button class="btn primary" id="btn-dyn-new" style="width:100%;padding:14px;border-radius:12px;font-size:15px;margin-bottom:14px">＋ 发一条动态</button>
+    <div id="dyn-list"></div>
+  </div>
+</section>
+
+<!-- ============ 发动态 ============ -->
+<section id="view-dynedit" class="hidden">
+  <div class="bar">
+    <button class="icon-btn" id="btn-dyn-back" title="返回">‹</button>
+    <h1 id="dyn-edit-title">发动态</h1>
+    <button class="btn btn-sm primary" id="btn-dyn-publish">发布</button>
+  </div>
+  <div class="wrap">
+    <textarea id="d-body" placeholder="随便说点什么…"
+      style="width:100%;min-height:30vh;padding:14px 16px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;outline:none;resize:vertical;font-size:15px;line-height:1.8"></textarea>
+    <div class="card" style="margin-top:12px">
+      <div class="field">
+        <label>位置（可留空）</label>
+        <input id="d-loc" placeholder="例如：家里、公司" />
+      </div>
+      <div class="field">
+        <div class="switch">
+          <span>置顶这条动态</span>
+          <input type="checkbox" id="d-pinned" /><i></i>
+        </div>
+      </div>
+      <p class="hint" id="d-time"></p>
+    </div>
+    <div class="editor-actions">
+      <button class="btn primary" id="btn-dyn-publish-2">发布到博客</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 公告 ============ -->
+<section id="view-ann" class="hidden">
+  <div class="bar">
+    <h1>站点公告</h1>
+    <button class="btn btn-sm primary" id="btn-ann-save">保存</button>
+  </div>
+  <div class="wrap">
+    <div class="card">
+      <div class="switch">
+        <span>显示公告</span>
+        <input type="checkbox" id="a-enable" /><i></i>
+      </div>
+      <div class="field">
+        <label>标题（留空则显示「公告」）</label>
+        <input id="a-title" placeholder="公告" />
+      </div>
+      <div class="field">
+        <label>内容</label>
+        <textarea id="a-content" rows="4" placeholder="公告内容"></textarea>
+      </div>
+      <div class="field">
+        <div class="switch">
+          <span>允许访客关闭</span>
+          <input type="checkbox" id="a-closable" /><i></i>
+        </div>
+      </div>
+
+      <p class="subhead">底部链接按钮（可选）</p>
+      <div class="field">
+        <div class="switch">
+          <span>启用链接按钮</span>
+          <input type="checkbox" id="a-link-enable" /><i></i>
+        </div>
+      </div>
+      <div class="field">
+        <label>按钮文字</label>
+        <input id="a-link-text" placeholder="了解更多" />
+      </div>
+      <div class="field">
+        <label>链接地址</label>
+        <input id="a-link-url" placeholder="https://" />
+      </div>
+      <div class="field">
+        <div class="switch">
+          <span>在新窗口打开</span>
+          <input type="checkbox" id="a-link-external" /><i></i>
+        </div>
+      </div>
+    </div>
+    <p class="hint">改的是 <code class="k">src/data/announcement.json</code>，保存后 Cloudflare 重建约 1 分钟生效。</p>
+  </div>
+</section>
+
+<nav class="tabbar hidden" id="tabbar">
+  <button data-tab="list"><span class="ti">文</span>文章</button>
+  <button data-tab="dyn"><span class="ti">动</span>动态</button>
+  <button data-tab="ann"><span class="ti">告</span>公告</button>
+</nav>
 
 <div class="toast" id="toast"></div>
 <input type="file" id="file-pick" accept="image/*" class="hidden" />
@@ -436,6 +560,12 @@ async function readPost(file) {
   return { text: text, sha: data.sha };
 }
 
+/* 按完整路径读文件（动态、公告用） */
+async function readFileAt(path) {
+  const data = await gh("/contents/" + path.replace(/^\/|\/$/g, "") + "?ref=" + encodeURIComponent(cfg.branch), {});
+  return { text: b64decode(data.content), sha: data.sha };
+}
+
 async function writeFile(path, contentStr, message, sha) {
   const body = {
     message: message,
@@ -471,7 +601,8 @@ function unq(s) {
   return v.replace(/\\(["'\\])/g, "$1");
 }
 
-function parseFm(fm) {
+function parseFm(fm, managedList) {
+  const list = managedList || MANAGED;
   const out = { fields: {}, extras: [] };
   const lines = fm.split(/\r?\n/);
   let i = 0;
@@ -482,7 +613,7 @@ function parseFm(fm) {
 
     const key = m[1];
     const val = m[2];
-    const managed = MANAGED.indexOf(key) !== -1;
+    const managed = list.indexOf(key) !== -1;
     const raw = [line];
 
     // 块状数组：tags:\n  - a\n  - b
@@ -630,8 +761,12 @@ function renderMarkdown(src) {
    视图切换
    ============================================================ */
 function show(view) {
-  ["setup", "list", "edit"].forEach((v) => {
+  ["setup", "list", "edit", "dyn", "dynedit", "ann"].forEach((v) => {
     $("view-" + v).classList.toggle("hidden", v !== view);
+  });
+  $("tabbar").classList.toggle("hidden", ["list", "dyn", "ann"].indexOf(view) === -1);
+  document.querySelectorAll("#tabbar button").forEach((b) => {
+    b.classList.toggle("on", b.dataset.tab === view);
   });
   window.scrollTo(0, 0);
 }
@@ -969,6 +1104,237 @@ function setPublishing(on) {
 
 $("btn-publish").addEventListener("click", publish);
 $("btn-publish-2").addEventListener("click", publish);
+
+/* ============================================================
+   动态（src/content/dynamic）
+   ============================================================ */
+const DYN_DIR = "src/content/dynamic";
+const DYN_FIELDS = ["published", "pinned", "location"];
+
+const dynState = { list: [], editing: null };
+
+function pad2(n) { return String(n).padStart(2, "0"); }
+
+function nowStamp() {
+  const d = new Date();
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+    " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes()) + ":" + pad2(d.getSeconds());
+}
+function nowFileStamp() {
+  const d = new Date();
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()) +
+    "-" + pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds());
+}
+
+function buildDynDocument(f, extras, body) {
+  const lines = ["---"];
+  lines.push("published: " + (f.published || nowStamp()));
+  if (f.pinned) lines.push("pinned: true");
+  if (f.location) lines.push("location: " + yamlStr(f.location));
+  (extras || []).forEach((l) => { if (l.trim()) lines.push(l); });
+  lines.push("---");
+  lines.push("");
+  lines.push(String(body || "").replace(/^\r?\n/, ""));
+  return lines.join("\n");
+}
+
+async function listDyn() {
+  let data;
+  try {
+    data = await gh("/contents/" + DYN_DIR + "?ref=" + encodeURIComponent(cfg.branch), {});
+  } catch (e) {
+    // 目录还不存在：第一次发动态时 GitHub 会自动建，这里当作空列表
+    if (e.code === 404) return [];
+    throw e;
+  }
+  if (!Array.isArray(data)) return [];
+  return data
+    .filter((f) => f.type === "file" && /\.mdx?$/i.test(f.name))
+    .map((f) => ({ file: f.name, sha: f.sha, size: f.size }))
+    .sort((a, b) => (a.file < b.file ? 1 : -1))
+    .slice(0, 20);
+}
+
+async function refreshDyn() {
+  const box = $("dyn-list");
+  box.innerHTML = '<div class="empty">读取中…</div>';
+  try {
+    dynState.list = await listDyn();
+    $("dyn-count").textContent = dynState.list.length ? dynState.list.length + " 条" : "";
+    if (!dynState.list.length) {
+      box.innerHTML = '<div class="empty">还没有动态<br />点上面那个按钮发一条</div>';
+      return;
+    }
+
+    const loaded = await Promise.all(dynState.list.map(async (it) => {
+      try {
+        const r = await readFileAt(DYN_DIR + "/" + it.file);
+        const parts = splitFrontmatter(r.text);
+        const parsed = parseFm(parts.fm, DYN_FIELDS);
+        return {
+          file: it.file,
+          sha: r.sha,
+          published: parsed.fields.published || it.file.slice(0, 10),
+          pinned: String(parsed.fields.pinned).toLowerCase() === "true",
+          location: parsed.fields.location || "",
+          body: parts.body.trim(),
+          extras: parsed.extras,
+        };
+      } catch (e) {
+        return { file: it.file, sha: it.sha, published: it.file.slice(0, 10), pinned: false, location: "", body: "(读取失败)", extras: [] };
+      }
+    }));
+
+    box.innerHTML = loaded.map((p, i) =>
+      '<div class="dyn" data-i="' + i + '">' +
+        '<div class="head">' +
+          (p.pinned ? '<span class="pin">置顶</span>' : "") +
+          "<span>" + esc(String(p.published)) + "</span>" +
+        "</div>" +
+        '<div class="body">' + esc(p.body.slice(0, 140)) + (p.body.length > 140 ? "…" : "") + "</div>" +
+        (p.location ? '<div class="loc">' + esc(p.location) + "</div>" : "") +
+      "</div>"
+    ).join("");
+
+    Array.from(box.querySelectorAll(".dyn")).forEach((el) => {
+      el.addEventListener("click", () => openDyn(loaded[+el.dataset.i]));
+    });
+  } catch (e) {
+    box.innerHTML = '<div class="empty">加载失败：' + esc(e.message) + "</div>";
+  }
+}
+
+function newDyn() {
+  dynState.editing = null;
+  $("dyn-edit-title").textContent = "发动态";
+  $("d-body").value = "";
+  $("d-loc").value = "";
+  $("d-pinned").checked = false;
+  $("d-time").textContent = "发布时间：" + nowStamp();
+  show("dynedit");
+}
+
+async function openDyn(item) {
+  show("dynedit");
+  $("dyn-edit-title").textContent = "编辑动态";
+  dynState.editing = { file: item.file, sha: item.sha, extras: item.extras || [], published: item.published };
+  $("d-body").value = item.body;
+  $("d-loc").value = item.location || "";
+  $("d-pinned").checked = !!item.pinned;
+  $("d-time").textContent = "发布时间：" + (item.published || "");
+}
+
+async function saveDyn() {
+  const body = $("d-body").value;
+  if (!body.trim()) return toast("内容还是空的");
+
+  const isNew = !dynState.editing;
+  const file = isNew ? nowFileStamp() + ".md" : dynState.editing.file;
+  const fields = {
+    published: isNew ? nowStamp() : dynState.editing.published,
+    pinned: $("d-pinned").checked,
+    location: $("d-loc").value.trim(),
+  };
+  const doc = buildDynDocument(fields, isNew ? [] : dynState.editing.extras, body);
+  const path = DYN_DIR + "/" + file;
+
+  setDynPublishing(true);
+  try {
+    await writeFile(path, doc, (isNew ? "cms: 新建动态「" : "cms: 更新动态「") + file + "」", isNew ? null : dynState.editing.sha);
+    toast("已发布，约 1 分钟后出现在站点上", 4000);
+    setTimeout(() => { show("dyn"); refreshDyn(); }, 700);
+  } catch (e) {
+    toast("失败：" + e.message, 4000);
+  } finally {
+    setDynPublishing(false);
+  }
+}
+
+function setDynPublishing(on) {
+  ["btn-dyn-publish", "btn-dyn-publish-2"].forEach((id) => {
+    const b = $(id);
+    if (!b) return;
+    b.disabled = on;
+    b.textContent = on ? "发布中…" : (id === "btn-dyn-publish" ? "发布" : "发布到博客");
+  });
+}
+
+/* ============================================================
+   公告（src/data/announcement.json）
+   ============================================================ */
+const ANN_PATH = "src/data/announcement.json";
+let annSha = null;
+let annRaw = {};
+
+async function loadAnnounce() {
+  try {
+    const r = await readFileAt(ANN_PATH);
+    annSha = r.sha;
+    annRaw = JSON.parse(r.text || "{}");
+  } catch (e) {
+    if (e.code === 404) { annSha = null; annRaw = {}; }
+    else throw e;
+  }
+  const link = annRaw.link || {};
+  $("a-enable").checked = annRaw.enable !== false;
+  $("a-title").value = annRaw.title || "";
+  $("a-content").value = annRaw.content || "";
+  $("a-closable").checked = annRaw.closable !== false;
+  $("a-link-enable").checked = !!link.enable;
+  $("a-link-text").value = link.text || "";
+  $("a-link-url").value = link.url || "";
+  $("a-link-external").checked = !!link.external;
+}
+
+async function saveAnnounce() {
+  const btn = $("btn-ann-save");
+  btn.disabled = true; btn.textContent = "保存中";
+  try {
+    const obj = Object.assign({}, annRaw);
+    obj.enable = $("a-enable").checked;
+    obj.title = $("a-title").value.trim();
+    obj.content = $("a-content").value;
+    obj.closable = $("a-closable").checked;
+    obj.link = Object.assign({}, annRaw.link || {}, {
+      enable: $("a-link-enable").checked,
+      text: $("a-link-text").value.trim(),
+      url: $("a-link-url").value.trim(),
+      external: $("a-link-external").checked,
+    });
+
+    const json = JSON.stringify(obj, null, 2) + "\n";
+    const res = await writeFile(ANN_PATH, json, "cms: 更新站点公告", annSha);
+    annSha = (res && res.content && res.content.sha) || annSha;
+    annRaw = obj;
+    toast("公告已保存，约 1 分钟后生效", 3500);
+  } catch (e) {
+    toast("保存失败：" + e.message, 4000);
+  } finally {
+    btn.disabled = false; btn.textContent = "保存";
+  }
+}
+
+/* ============================================================
+   底部标签栏 & 新页面事件
+   ============================================================ */
+document.querySelectorAll("#tabbar button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const t = btn.dataset.tab;
+    if (t === "list") { show("list"); refreshList(); }
+    else if (t === "dyn") { show("dyn"); refreshDyn(); }
+    else { show("ann"); loadAnnounce().catch((e) => toast(e.message, 3500)); }
+  });
+});
+
+$("btn-dyn-refresh").addEventListener("click", refreshDyn);
+$("btn-dyn-new").addEventListener("click", newDyn);
+$("btn-dyn-back").addEventListener("click", () => {
+  if ($("d-body").value.trim() && !confirm("返回会丢掉没发布的内容，确定？")) return;
+  show("dyn");
+});
+$("btn-dyn-publish").addEventListener("click", saveDyn);
+$("btn-dyn-publish-2").addEventListener("click", saveDyn);
+$("btn-ann-save").addEventListener("click", saveAnnounce);
 
 /* ============================================================
    启动
