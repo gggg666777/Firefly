@@ -24,7 +24,10 @@ body{
   background:var(--bg);color:var(--ink);
   font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
   overscroll-behavior-y:none;
+  display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;
 }
+/* 每个视图自己滚动，标签栏固定在视口里，不依赖 position:fixed */
+body > section{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none;padding:0}
 
@@ -51,7 +54,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .btn-sm{padding:6px 11px;font-size:13px;border-radius:9px}
 
 /* ---------- 通用 ---------- */
-.wrap{max-width:640px;margin:0 auto;padding:14px 14px calc(88px + var(--safe-b))}
+.wrap{max-width:640px;margin:0 auto;padding:14px 14px calc(28px + var(--safe-b))}
 .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
   padding:16px;margin-bottom:12px}
 .card h2{margin:0 0 4px;font-size:15px;font-weight:600}
@@ -70,7 +73,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .row>*{flex:1;min-width:0}
 .hidden{display:none !important}
 .toast{
-  position:fixed;left:50%;bottom:calc(26px + var(--safe-b));transform:translate(-50%,20px);
+  position:fixed;left:50%;bottom:calc(80px + var(--safe-b));transform:translate(-50%,20px);
   background:#22282c;color:#fff;font-size:13.5px;padding:10px 18px;border-radius:999px;
   opacity:0;pointer-events:none;transition:.22s;z-index:100;max-width:88vw;text-align:center;
 }
@@ -144,11 +147,11 @@ code.k{background:#f1f3f4;padding:1px 5px;border-radius:4px;font-size:12.5px}
 
 /* ---------- 底部标签栏 ---------- */
 .tabbar{
-  position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;
-  background:rgba(255,255,255,.95);backdrop-filter:saturate(180%) blur(14px);
+  position:relative;flex:0 0 auto;z-index:30;display:flex;
+  background:rgba(255,255,255,.97);
   border-top:1px solid var(--line);padding-bottom:var(--safe-b);
 }
-.tabbar button{flex:1;padding:9px 0 11px;display:flex;flex-direction:column;align-items:center;
+.tabbar button{flex:1;padding:10px 0 12px;display:flex;flex-direction:column;align-items:center;
   gap:2px;font-size:11px;color:var(--ink-3);transition:color .15s}
 .tabbar button .ti{font-size:17px;line-height:1;font-weight:500}
 .tabbar button.on{color:var(--accent)}
@@ -291,6 +294,7 @@ code.k{background:#f1f3f4;padding:1px 5px;border-radius:4px;font-size:12.5px}
       <button class="btn" id="btn-stash">存本地草稿</button>
       <button class="btn primary" id="btn-publish-2">发布到博客</button>
     </div>
+    <button class="btn danger hidden" id="btn-delete" style="width:100%;margin-top:10px">删除这篇文章</button>
     <p class="hint" id="edit-hint"></p>
   </div>
 </section>
@@ -333,6 +337,7 @@ code.k{background:#f1f3f4;padding:1px 5px;border-radius:4px;font-size:12.5px}
     <div class="editor-actions">
       <button class="btn primary" id="btn-dyn-publish-2">发布到博客</button>
     </div>
+    <button class="btn danger hidden" id="btn-dyn-delete" style="width:100%;margin-top:10px">删除这条动态</button>
   </div>
 </section>
 
@@ -506,7 +511,9 @@ async function gh(path, opts) {
   if (!res.ok) throw new Error("GitHub 返回 " + res.status);
 
   if (opts.raw) return res;
-  return res.json();
+  const text = await res.text();
+  if (!text) return null;
+  try { return JSON.parse(text); } catch (e) { return null; }
 }
 
 function dirPath() {
@@ -574,6 +581,14 @@ async function writeFile(path, contentStr, message, sha) {
   };
   if (sha) body.sha = sha;
   return gh("/contents/" + path.replace(/^\/|\/$/g, ""), { method: "PUT", body: body });
+}
+
+/* 删除仓库里的一个文件（必须带 sha） */
+async function deleteFile(path, message, sha) {
+  return gh("/contents/" + path.replace(/^\/|\/$/g, ""), {
+    method: "DELETE",
+    body: { message: message, sha: sha, branch: cfg.branch },
+  });
 }
 
 /* ============================================================
@@ -768,6 +783,8 @@ function show(view) {
   document.querySelectorAll("#tabbar button").forEach((b) => {
     b.classList.toggle("on", b.dataset.tab === view);
   });
+  const cur = $("view-" + view);
+  if (cur) cur.scrollTop = 0;
   window.scrollTo(0, 0);
 }
 
@@ -876,6 +893,7 @@ function newPost() {
   $("e-draft").checked = false;
   $("body").value = "";
   $("edit-hint").textContent = "文件名会自动生成：日期-标题.md";
+  $("btn-delete").classList.add("hidden");
   setEditMode(false);
   show("edit");
 
@@ -918,6 +936,7 @@ async function openPost(file, sha) {
     $("e-draft").checked = String(f.draft).toLowerCase() === "true";
     $("body").value = parts.body;
     $("edit-hint").textContent = "正在编辑 " + file + "（原文件里的其他字段会保留）";
+    $("btn-delete").classList.remove("hidden");
     setEditMode(false);
   } catch (e) {
     toast("读取失败：" + e.message, 3500);
@@ -1105,6 +1124,35 @@ function setPublishing(on) {
 $("btn-publish").addEventListener("click", publish);
 $("btn-publish-2").addEventListener("click", publish);
 
+/* 删除文章 */
+async function deletePost() {
+  if (!state.editing || !state.editing.file) return toast("这篇还没保存过，不用删");
+  const file = state.editing.file;
+  const title = $("e-title").value.trim() || file;
+  if (!confirm("确定删除「" + title + "」？\n\n会从 GitHub 仓库删掉 " + file + "，删了找不回来。")) return;
+
+  const btn = $("btn-delete");
+  btn.disabled = true; btn.textContent = "删除中…";
+  try {
+    // 重新取一次 sha，避免用到过期的值
+    const cur = await readPost(file);
+    await deleteFile(
+      cfg.dir.replace(/^\/|\/$/g, "") + "/" + file,
+      "cms: 删除文章「" + file + "」",
+      cur.sha
+    );
+    localStorage.removeItem(DRAFT_KEY);
+    state.editing = null;
+    toast("已删除，约 1 分钟后从站点消失", 3500);
+    setTimeout(() => { show("list"); refreshList(); }, 700);
+  } catch (e) {
+    toast("删除失败：" + e.message, 4000);
+  } finally {
+    btn.disabled = false; btn.textContent = "删除这篇文章";
+  }
+}
+$("btn-delete").addEventListener("click", deletePost);
+
 /* ============================================================
    动态（src/content/dynamic）
    ============================================================ */
@@ -1211,6 +1259,7 @@ function newDyn() {
   $("d-loc").value = "";
   $("d-pinned").checked = false;
   $("d-time").textContent = "发布时间：" + nowStamp();
+  $("btn-dyn-delete").classList.add("hidden");
   show("dynedit");
 }
 
@@ -1222,6 +1271,7 @@ async function openDyn(item) {
   $("d-loc").value = item.location || "";
   $("d-pinned").checked = !!item.pinned;
   $("d-time").textContent = "发布时间：" + (item.published || "");
+  $("btn-dyn-delete").classList.remove("hidden");
 }
 
 async function saveDyn() {
@@ -1257,6 +1307,27 @@ function setDynPublishing(on) {
     b.disabled = on;
     b.textContent = on ? "发布中…" : (id === "btn-dyn-publish" ? "发布" : "发布到博客");
   });
+}
+
+/* 删除动态 */
+async function deleteDyn() {
+  if (!dynState.editing || !dynState.editing.file) return toast("这条还没保存过，不用删");
+  const file = dynState.editing.file;
+  if (!confirm("确定删除这条动态？\n\n会从 GitHub 仓库删掉 " + file + "，删了找不回来。")) return;
+
+  const btn = $("btn-dyn-delete");
+  btn.disabled = true; btn.textContent = "删除中…";
+  try {
+    const cur = await readFileAt(DYN_DIR + "/" + file);
+    await deleteFile(DYN_DIR + "/" + file, "cms: 删除动态「" + file + "」", cur.sha);
+    dynState.editing = null;
+    toast("已删除，约 1 分钟后从站点消失", 3500);
+    setTimeout(() => { show("dyn"); refreshDyn(); }, 700);
+  } catch (e) {
+    toast("删除失败：" + e.message, 4000);
+  } finally {
+    btn.disabled = false; btn.textContent = "删除这条动态";
+  }
 }
 
 /* ============================================================
@@ -1334,6 +1405,7 @@ $("btn-dyn-back").addEventListener("click", () => {
 });
 $("btn-dyn-publish").addEventListener("click", saveDyn);
 $("btn-dyn-publish-2").addEventListener("click", saveDyn);
+$("btn-dyn-delete").addEventListener("click", deleteDyn);
 $("btn-ann-save").addEventListener("click", saveAnnounce);
 
 /* ============================================================
